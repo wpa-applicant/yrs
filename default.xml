@@ -5,7 +5,7 @@
 
     <default sync-j="20"/>
 
-    <project remote="poky"                revision="kirkstone"   name="poky" path=""/>
-    <project remote="meta-openembedded"   revision="kirkstone"   name="meta-openembedded"   path="poky"/>
+    <project remote="poky"                revision="kirkstone"   name="poky"                path="poky"/>
+    <project remote="meta-openembedded"   revision="kirkstone"   name="meta-openembedded"   path="poky/meta-openembedded"/>
 
 </manifest>
