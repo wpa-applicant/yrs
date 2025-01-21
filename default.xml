@@ -4,6 +4,6 @@
 
     <default sync-j="20"/>
 
-    <project remote="poky"  revision="origin/kirkstone"  name="poky" path=""/>
+    <project remote="poky"  revision="kirkstone"  name="poky" path=""/>
 
 </manifest>
