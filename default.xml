@@ -2,7 +2,7 @@
 <manifest>
     <remote name="poky"                   fetch="git://git.yoctoproject.org"/>
     <remote name="meta-openembedded"      fetch="https://git.openembedded.org"/>
-    <remote name="meta-raspberrypi"       fetch="git://git.yoctoproject.org/meta-raspberrypi"/>
+    <remote name="meta-raspberrypi"       fetch="git://git.yoctoproject.org"/>
 
     <default sync-j="20"/>
 
