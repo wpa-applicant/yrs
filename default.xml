@@ -6,8 +6,8 @@
 
     <default sync-j="20"/>
 
-    <project remote="poky"  revision="origin/kirkstone"  name="poky" path="">
-    <project remote="oe"    revision="origin/kirkstone"  name="meta-openembedded" path="poky">
-    <project remote="raspi" revision="origin/kirkstone"  name="meta-raspberrypi" path="poky">
+    <project remote="poky"  revision="origin/kirkstone"  name="poky" path=""/>
+    <project remote="oe"    revision="origin/kirkstone"  name="meta-openembedded" path="poky"/>
+    <project remote="raspi" revision="origin/kirkstone"  name="meta-raspberrypi" path="poky"/>
 
 </manifest>
