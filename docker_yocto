@@ -98,8 +98,59 @@ RUN sed -i "/# Machine Selection/a\MACHINE = \"$MACHINE\"" /home/$USERNAME/poky/
 # Add usefull commands to user's ~/.bashrc
 #
 # sets up build environment on terminal startup
+RUN echo "POKY_ROOT=/home/$USERNAME/poky" >> /home/$USERNAME/.bashrc
 RUN echo "cd /home/$USERNAME/poky  &&  source /home/$USERNAME/poky/oe-init-build-env" >> /home/$USERNAME/.bashrc
-
+# Add custom cd, grep and find functions to user's ~/.bashrc
+RUN echo 'yocto_setup() {' >> /home/$USERNAME/.bashrc && \
+    echo '    cd $POKY_ROOT' >> /home/$USERNAME/.bashrc && \
+    echo '    source $HOME/poky/oe-init-build-env' >> /home/$USERNAME/.bashrc && \
+    echo '    cd $POKY_ROOT' >> /home/$USERNAME/.bashrc && \
+    echo '}' >> /home/$USERNAME/.bashrc && \
+    echo 'goroot() {' >> /home/$USERNAME/.bashrc && \
+    echo '    cd $POKY_ROOT' >> /home/$USERNAME/.bashrc && \
+    echo '}' >> /home/$USERNAME/.bashrc && \
+    echo 'gohome() {' >> /home/$USERNAME/.bashrc && \
+    echo '    cd $HOME' >> /home/$USERNAME/.bashrc && \
+    echo '}' >> /home/$USERNAME/.bashrc && \
+    echo 'gobuild() {' >> /home/$USERNAME/.bashrc && \
+    echo '    cd $POKY_ROOT/build' >> /home/$USERNAME/.bashrc && \
+    echo '}' >> /home/$USERNAME/.bashrc && \
+    echo 'gowork() {' >> /home/$USERNAME/.bashrc && \
+    echo '    cd $POKY_ROOT/build/tmp/work/' >> /home/$USERNAME/.bashrc && \
+    echo '}' >> /home/$USERNAME/.bashrc && \
+    echo 'goworkspace() {' >> /home/$USERNAME/.bashrc && \
+    echo '    cd $POKY_ROOT/build/workspace/sources' >> /home/$USERNAME/.bashrc && \
+    echo '}' >> /home/$USERNAME/.bashrc && \
+    echo 'obashrc() {' >> /home/$USERNAME/.bashrc && \
+    echo '    code $HOME/.bashrc' >> /home/$USERNAME/.bashrc && \
+    echo '}' >> /home/$USERNAME/.bashrc && \
+    echo 'sbashrc() {' >> /home/$USERNAME/.bashrc && \
+    echo '    source $HOME/.bashrc' >> /home/$USERNAME/.bashrc && \
+    echo '}' >> /home/$USERNAME/.bashrc && \
+    echo 'cgrep() {' >> /home/$USERNAME/.bashrc && \
+    echo '    find . -name .repo -prune -o -name .git -prune -o -type f \( -name ".c" -o -name ".cc" -o -name ".cpp" -o -name ".h" \) -print0 | xargs -0 grep --color -n "$@"' >> /home/$USERNAME/.bashrc && \
+    echo '}' >> /home/$USERNAME/.bashrc && \
+    echo 'hgrep() {' >> /home/$USERNAME/.bashrc && \
+    echo '    find . -name .repo -prune -o -name .git -prune -o -name "*.h" -print0 | xargs -0 grep --color -n "$@"' >> /home/$USERNAME/.bashrc && \
+    echo '}' >> /home/$USERNAME/.bashrc && \
+    echo 'ppgrep() {' >> /home/$USERNAME/.bashrc && \
+    echo '    find . -name .repo -prune -o -name .git -prune -o -name "*.cpp" -print0 | xargs -0 grep --color -n "$@"' >> /home/$USERNAME/.bashrc && \
+    echo '}' >> /home/$USERNAME/.bashrc && \
+    echo 'bbgrep() {' >> /home/$USERNAME/.bashrc && \
+    echo '    find . -name build -prune -name .repo -prune -o -name .git -prune -o -type f \( -name ".bb" -o -name ".bbappend" \) -print0 | xargs -0 grep --color -n "$@"' >> /home/$USERNAME/.bashrc && \
+    echo '}' >> /home/$USERNAME/.bashrc && \
+    echo 'confgrep() {' >> /home/$USERNAME/.bashrc && \
+    echo '    find . -name .repo -prune -o -name .git -prune -o -name "*.conf" -print0 | xargs -0 grep --color -n "$@"' >> /home/$USERNAME/.bashrc && \
+    echo '}' >> /home/$USERNAME/.bashrc && \
+    echo 'cmgrep() {' >> /home/$USERNAME/.bashrc && \
+    echo '    find . -name .repo -prune -o -name .git -prune -o -name "CMakeLists.txt" -print0 | xargs -0 grep --color -n "$@"' >> /home/$USERNAME/.bashrc && \
+    echo '}' >> /home/$USERNAME/.bashrc && \
+    echo 'cmakegrep() {' >> /home/$USERNAME/.bashrc && \
+    echo '    find . -name .repo -prune -o -name .git -prune -o -name "CMakeLists.txt" -print0 | xargs -0 grep --color -n "$@"' >> /home/$USERNAME/.bashrc && \
+    echo '}' >> /home/$USERNAME/.bashrc && \
+    echo 'findnamed() {' >> /home/$USERNAME/.bashrc && \
+    echo '    find ${2:-.} -name "$1" -printf "%M %-6u %-6g  %-${3:-140}p %TY-%Tm-%Td %TH:%TM\n"' >> /home/$USERNAME/.bashrc && \
+    echo '}' >> /home/$USERNAME/.bashrc
 
 # example build
 # WORKDIR /home/$USERNAME/poky
