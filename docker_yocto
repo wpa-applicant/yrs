@@ -1,59 +1,107 @@
 FROM ubuntu:22.04
+#--------------------------------------------------  --------------------------------------------------
+#--------------------------------------------------  --------------------------------------------------
+# This Docker file builds a fairly minimal container to run Yocto builds on
+#
+# Building inside a container enables a common development environment across many devs' machines.
+# This is important because Yocto can be fussy about having a very specific version of libraries which
+# can be a problem when that library is Python, GCC or anything else the dev needs for other projects.
+#--------------------------------------------------  --------------------------------------------------
+#--------------------------------------------------  --------------------------------------------------
+# Setup most users will need
+#
 
+# Additional packets you need for development
+ARG ADDITIONAL_PACKETS=" nano "
+# The UID of the Docker user  -  this should match your UID on the host machine so you can "own" the
+#                                output files mounted outside the Docker container, on the host
+ARG UID="1000"
+# Target platform  -  What platfrom will you be building for?
+ARG MACHINE="raspberrypi4"
+# Git config
+ARG GIT_EMAIL="joktista@example.com"
+ARG GIT_NAME="Joktista"
+
+#--------------------------------------------------  --------------------------------------------------
+# Optional customization
+#
+
+ARG USERNAME="joktista"
+ARG PASSWORD="pass"
+
+ARG GROUP="joktisti"
+
+#--------------------------------------------------  --------------------------------------------------
+
+# Disables user input prompts while running the Docker build
 ARG DEBIAN_FRONTEND=noninteractive
+# Changes the shell used by Docker from Dash to Bash (to allow properly sourcing scripts)
 SHELL ["/bin/bash", "-c"]
-# RUN
-#   dpkg add arch
-#   apt update, install, upgrade
-#   other
-#   dpkg-reconfigure dash
+
+# also apt-get upgrade?
 RUN apt-get update && \
   apt-get install -y build-essential chrpath cpio debianutils diffstat file gawk gcc git iputils-ping libacl1 liblz4-tool locales python3 python3-git python3-jinja2 python3-pexpect python3-pip python3-subunit socat texinfo unzip wget xz-utils zstd \
-  curl \
-  sudo nano && \
+   curl sudo \
+   $ADDITIONAL_PACKETS && \
   rm -rf /var/lib/apt-lists/* && \
   echo "dash dash/sh boolean false" | debconf-set-selections && \
   dpkg-reconfigure dash
 
 
-# download repo tool
+# download Repo tool
 RUN curl https://storage.googleapis.com/git-repo-downloads/repo > /bin/repo && chmod a+x /bin/repo
 
 # replace python with python3, but make sure you're not replacing python3 with python33, python33 with python333,...
 RUN sed -i "1s/python\(\b\|$\)/python3/" /bin/repo
 
-# create user joktista in group joktisti with password pass
-# change this UID to match the host UID (as in the host that is running the Docker and storing the mounted volume)
-RUN groupadd joktisti -g 1000
-RUN useradd -u 1000 -g 1000 -s /bin/bash -p pass -m joktista && \
-  usermod -aG sudo joktista && \
-  echo "joktista:pass" | chpasswd
+# Create user $USERNAME in group $GROUP with password $PASSWORD
+# Change $UID to match the host UID (UID of the host that is running the Docker and storing the mounted volume)
+RUN groupadd $GROUP -g 1000
+RUN useradd -u $UID -g 1000 -s /bin/bash -p $PASSWORD -m $USERNAME && \
+  usermod -aG sudo $USERNAME && \
+  echo "$USERNAME:$PASSWORD" | chpasswd
 
 
+# Set-up localization
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
   locale-gen
 ENV LANG=en_US.utf8
 
-USER joktista
-WORKDIR /home/joktista
-RUN git config --global user.email "build@example.com" && git config --global user.name "Build"
+# Switch to new user, so the Yocto system isn't owned by root
+USER $USERNAME
+WORKDIR /home/$USERNAME
+RUN git config --global user.email $GIT_EMAIL && git config --global user.name $GIT_NAME
 
+# The Repo tool downloas the reference OS kit (Poky) and the additional layers needed, based on default.xml
+#  The additional layers are placed inside the Poky directory for ease of use.
 RUN repo init -u https://github.com/wpa-applicant/yrs.git && \
   repo sync
 
-# when sourcing the build environment script - must be in the correct workdir!!
-WORKDIR /home/joktista/poky
-RUN source /home/joktista/poky/oe-init-build-env && \
-  bitbake-layers add-layer /home/joktista/poky/meta-openembedded/meta-oe && \
-  bitbake-layers add-layer /home/joktista/poky/meta-raspberrypi
 
-# change MACHINE
-RUN sed -i "/# Machine Selection/a\MACHINE = \"raspberrypi4\"" /home/joktista/poky/build/conf/local.conf
+# (when sourcing the build environment script - must be in the correct workdir!!)
+#
+# You can check bblayers.conf to see if these layers have been added to the Yocto build environment
+#  note: Adding layers to bblayers.conf does not by itself mean that the layer will be built.
+#        You can now manually build recipes from these layers and push/scp them to the target machine.
+#          OR if you want them to be included in the image by default:
+#        You can add them to the image with a .bbapend or (if possible) set some variable that will
+#        call on these recipes (for example setting MACHINE="raspberrypi4")
+WORKDIR /home/$USERNAME/poky
+RUN source /home/$USERNAME/poky/oe-init-build-env && \
+  bitbake-layers add-layer /home/$USERNAME/poky/meta-openembedded/meta-oe && \
+  bitbake-layers add-layer /home/$USERNAME/poky/meta-raspberrypi
 
-# add usefull commands to user's ~/.bashrc
-RUN echo "cd /home/joktista/poky  &&  source /home/joktista/poky/oe-init-build-env" >> /home/joktista/.bashrc
+# changes MACHINE variable in local.conf
+#   which switches what plaftform Yocto builds for
+RUN sed -i "/# Machine Selection/a\MACHINE = \"$MACHINE\"" /home/$USERNAME/poky/build/conf/local.conf
 
-# example build, can be removed but it's nice to confirm that builds work 
-WORKDIR /home/joktista/poky
-#RUN source /home/joktista/poky/oe-init-build-env && \
-#  bitbake core-image-base
+# Add usefull commands to user's ~/.bashrc
+#
+# sets up build environment on terminal startup
+RUN echo "cd /home/$USERNAME/poky  &&  source /home/$USERNAME/poky/oe-init-build-env" >> /home/$USERNAME/.bashrc
+
+
+# example build
+# WORKDIR /home/$USERNAME/poky
+# RUN source /home/$USERNAME/poky/oe-init-build-env && \
+#   bitbake core-image-base
