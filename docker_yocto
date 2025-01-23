@@ -1,0 +1,59 @@
+FROM ubuntu:22.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+SHELL ["/bin/bash", "-c"]
+# RUN
+#   dpkg add arch
+#   apt update, install, upgrade
+#   other
+#   dpkg-reconfigure dash
+RUN apt-get update && \
+  apt-get install -y build-essential chrpath cpio debianutils diffstat file gawk gcc git iputils-ping libacl1 liblz4-tool locales python3 python3-git python3-jinja2 python3-pexpect python3-pip python3-subunit socat texinfo unzip wget xz-utils zstd \
+  curl \
+  sudo nano && \
+  rm -rf /var/lib/apt-lists/* && \
+  echo "dash dash/sh boolean false" | debconf-set-selections && \
+  dpkg-reconfigure dash
+
+
+# download repo tool
+RUN curl https://storage.googleapis.com/git-repo-downloads/repo > /bin/repo && chmod a+x /bin/repo
+
+# replace python with python3, but make sure you're not replacing python3 with python33, python33 with python333,...
+RUN sed -i "1s/python\(\b\|$\)/python3/" /bin/repo
+
+# create user joktista in group joktisti with password pass
+# change this UID to match the host UID (as in the host that is running the Docker and storing the mounted volume)
+RUN groupadd joktisti -g 1000
+RUN useradd -u 1000 -g 1000 -s /bin/bash -p pass -m joktista && \
+  usermod -aG sudo joktista && \
+  echo "joktista:pass" | chpasswd
+
+
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
+  locale-gen
+ENV LANG=en_US.utf8
+
+USER joktista
+WORKDIR /home/joktista
+RUN git config --global user.email "build@example.com" && git config --global user.name "Build"
+
+RUN repo init -u https://github.com/wpa-applicant/yrs.git && \
+  repo sync
+
+# when sourcing the build environment script - must be in the correct workdir!!
+WORKDIR /home/joktista/poky
+RUN source /home/joktista/poky/oe-init-build-env && \
+  bitbake-layers add-layer /home/joktista/poky/meta-openembedded/meta-oe && \
+  bitbake-layers add-layer /home/joktista/poky/meta-raspberrypi
+
+# change MACHINE
+RUN sed -i "/# Machine Selection/a\MACHINE = \"raspberrypi4\"" /home/joktista/poky/build/conf/local.conf
+
+# add usefull commands to user's ~/.bashrc
+RUN echo "cd /home/joktista/poky  &&  source /home/joktista/poky/oe-init-build-env" >> /home/joktista/.bashrc
+
+# example build, can be removed but it's nice to confirm that builds work 
+WORKDIR /home/joktista/poky
+#RUN source /home/joktista/poky/oe-init-build-env && \
+#  bitbake core-image-base
