@@ -1,0 +1,1 @@
+docker build --build-arg  UID=$(id -u) -t docker_yocto -f docker_yocto .
