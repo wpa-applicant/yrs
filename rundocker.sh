@@ -1,7 +1,8 @@
 docker run \
   -it \
   --hostname buildsrv \
-  --mount type=volume,dst=/home/joktista,volume-driver=local,volume-opt=type=none,volume-opt=o=bind,volume-opt=device=/home/stfn/yrs/yocto/ \
+  --mount type=volume,dst=/,volume-driver=local,volume-opt=type=none,volume-opt=o=bind,volume-opt=device=/home/stfn/yrs/yocto/ \
+  --cap-add=SYS_RAWIO --device=/dev/mem --security-opt seccomp=unconfined \
 docker_yocto
 
 # These options were used in the Xiling wiki Confulence post
