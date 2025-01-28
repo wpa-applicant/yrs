@@ -102,8 +102,8 @@ RUN sed -i "/# Machine Selection/a\MACHINE = \"$MACHINE\"" /home/$USERNAME/yocto
 # Add usefull commands to user's ~/.bashrc
 #
 # sets up build environment on terminal startup
-RUN echo "YOCTO_ROOT=/home/$USERNAME/yocto/poky" >> /home/$USERNAME/.bashrc
-RUN echo "POKY_ROOT=/home/$USERNAME/yocto" >> /home/$USERNAME/.bashrc
+RUN echo "POKY_ROOT=/home/$USERNAME/yocto/poky" >> /home/$USERNAME/.bashrc
+RUN echo "YOCTO_ROOT=/home/$USERNAME/yocto" >> /home/$USERNAME/.bashrc
 RUN echo "cd /home/$USERNAME/yocto/poky  &&  source /home/$USERNAME/yocto/poky/oe-init-build-env" >> /home/$USERNAME/.bashrc
 # Add custom cd, grep and find functions to user's ~/.bashrc
 RUN echo 'yocto_setup() {' >> /home/$USERNAME/.bashrc && \
