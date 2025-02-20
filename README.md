@@ -13,7 +13,7 @@ Builds a (for now minimal) pre-configured Yocto image for Raspberry Pi target
 Builds the docker container as "docker_yocto" and passes the user's UID to the container's user  
 
 **rundocker.sh**  
-**TODO:**  username is hardcoded to **"joktista"** and so is the host-side path  
+**TODO:**  username is hardcoded to **"joktista"** and so is the host-side path hardcoded to **"stfn"**  
 Runs the docker container with filesystem binding and (todo other useful configurations)  
 
 **default.xml**  
